@@ -1,0 +1,32 @@
+version: "3.9"
+name: "road_vision"
+services:
+  mqtt:
+    image: eclipse-mosquitto
+    container_name: mqtt
+    volumes:
+      - ./mosquitto:/mosquitto
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    ports:
+      - 1883:1883
+      - 9001:9001
+    networks:
+      mqtt_network:
+
+  fake_agent:
+    container_name: agent
+    build: ../service/agent
+    depends_on:
+      - mqtt
+    environment:
+      MQTT_BROKER_URL: "http://mqtt:1883"
+      MQTT_AGGREGATED_DATA_TOPIC: "aggregated-data"
+      MQTT_PARKING_TOPIC: "parking"
+      DELAY: 1000
+    networks:
+      - mqtt_network
+
+
+networks:
+  mqtt_network:
