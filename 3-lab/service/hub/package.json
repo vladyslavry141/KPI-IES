@@ -1,0 +1,23 @@
+{
+  "name": "@kpi-ies/hub",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:prod": "tsc --build ./tsconfig.json",
+    "start:prod": "node ./dist/index.js",
+    "start:prod:env": "node --env-file=./.env ./dist/index.js "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.2",
+    "@types/node": "^20.11.20",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "@redis/client": "^1.5.14",
+    "mqtt": "^5.3.5"
+  }
+}
