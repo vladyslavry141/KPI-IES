@@ -1,0 +1,120 @@
+version: "3.9"
+name: "road_vision"
+services:
+  postgres:
+    image: postgres:16.2-alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=postgres_password
+      - POSTGRES_USER=user
+      - POSTGRES_DB=road_vision  
+    volumes: 
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      db-network:
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      db-network:
+
+  store:
+    container_name: store
+    build: ../service/store
+    depends_on:
+      - postgres
+    restart: always
+    environment:
+      POSTGRES_CONNECTION_URL: postgresql://user:postgres_password@postgres/road_vision
+    ports:
+      - "3000:3000"
+    networks:
+      db-network:
+      redis-network:
+    
+  mqtt:
+    image: eclipse-mosquitto
+    container_name: mqtt
+    volumes:
+      - ./mosquitto:/mosquitto
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    ports:
+      - 1883:1883
+      - 9001:9001
+    networks:
+      mqtt-network:
+
+  fake_agent:
+    container_name: agent
+    build: ../service/agent
+    depends_on:
+      - mqtt
+    environment:
+      MQTT_BROKER_URL: "http://mqtt:1883"
+      MQTT_AGENT_DATA_TOPIC: "agent-data"
+    networks:
+      mqtt-network:
+      road-vision:
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      redis-network:
+
+  hub:
+    container_name: hub
+    build: ../service/hub
+    depends_on:
+      - mqtt
+      - store
+      - redis
+    environment:
+      MQTT_BROKER_URL: "http://mqtt:1883"
+      MQTT_HUB_DATA_TOPIC: "hub-data"
+      REDIS_URL: "redis://redis:6379"
+      STORE_HOST: "http://store:3000"
+      HUB_BATCH_SIZE: 10
+    networks:
+      mqtt-network:
+      road-vision:
+      redis-network:
+    
+  edge:
+    container_name: edge
+    build: ../service/edge
+    depends_on:
+      - mqtt
+    environment:
+      MQTT_BROKER_URL: "http://mqtt:1883"
+      MQTT_HUB_DATA_TOPIC: "hub-data"
+      MQTT_AGENT_DATA_TOPIC: "agent-data"
+    networks:
+      mqtt-network:
+      road-vision:
+      redis-network:
+
+networks:
+  mqtt-network:
+  db-network:
+  road-vision:
+  redis-network:
+
+
+volumes:
+  postgres-data:
+  pgadmin-data:
+

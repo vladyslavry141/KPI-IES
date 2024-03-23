@@ -1,0 +1,23 @@
+{
+  "name": "@kpi-ies/edge",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:prod": "tsc --build ./tsconfig.json",
+    "start:prod": "node ./dist/index.js",
+    "start:prod:env": "node --env-file=./.env ./dist/index.js",
+    "start:dev": "pnpm build:prod && pnpm start:prod:env"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.2",
+    "@types/node": "^20.11.20",
+    "typescript": "^5.4.2"
+  },
+  "dependencies": {
+    "mqtt": "^5.3.5"
+  }
+}
