@@ -186,14 +186,14 @@ const routes: FastifyPluginAsync = async function (instance, _) {
     }
   );
 
-  instance.post<{
+  instance.patch<{
     Params: { id: number };
     Body: InferInsertModel<typeof processedAgentData>;
   }>(
     "/:id",
     {
       schema: {
-        description: "Creates a new processed agent data entry",
+        description: "Updates a new processed agent data entry",
         tags: ["processed_agent_data"],
         summary: "Update data entry",
         params: {
